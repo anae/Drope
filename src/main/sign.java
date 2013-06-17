@@ -1,8 +1,10 @@
 package main;
 
 import java.awt.Color;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Window;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -38,6 +40,7 @@ public class sign extends JFrame{
 
 
 			db connexion = new db(); // DB connection
+			db.db();
 			Statement state;
 			state =connexion.getState(); // init connection
 
@@ -55,19 +58,21 @@ public class sign extends JFrame{
 
 			// if the mail or password is already in the db the count will return true 
 			ResultSet count = state.executeQuery("SELECT * FROM clients WHERE mail='"+mail+"' and password='"+password_crypt+"'"); 
-			count.beforeFirst();// put the  cursor in the beginning of the table to be sure to see all occurrency
+			//count.beforeFirst();// put the  cursor in the beginning of the table to be sure to see all occurrency
 
 			if (count.next() == true )
 			{
 				System.out.println("Your mail is already in the Data Base");
-				events.newEvent("Attention","Your mail is already in the Data Base",2);
-			
+				events.newEvent("Warning","Your mail is already in the Data Base",2);
+
 			}
 			else
 			{
 				state.execute("INSERT INTO clients (name,first_name,mail,password,level) VALUES('"+name+"','"+first_name+"','"+mail+"', '"+password_crypt+"','0')"); 
 				System.out .println("Your submissions is under review, as soon you will received a mail"); 
-				sign.sign_window();
+				sign frame = new sign();
+				frame.dispose();
+				//sign.sign_window();
 				events.newEvent("Info","Wait few minutes for using Drope",2);
 				//return "Your submissions is under review, as soon you will received a mail";
 			}
@@ -77,12 +82,69 @@ public class sign extends JFrame{
 		}
 		catch (Exception e) {
 			System.out.println("Connection fail, double check your credentials");
-			System.out.println("Error message: "+e);
+			System.out.println("Error message: \n"+e);
+			error.to_DB(0, e);
 		}
 
 	}
 
-	public static void sign_window() throws SQLException
+	public static void test(String name, String first_name, String mail, String password ) throws SQLException
+	{
+		try{
+
+			db connexion = new db(); // DB connection
+			db.db();
+			Statement state;
+			state =connexion.getState(); // init connection
+
+			MessageDigest md = MessageDigest.getInstance("SHA-256"); // encryption of password using SHA-256
+			md.update(password.getBytes("UTF-8"));
+			byte[] digest = md.digest(); // password is crypted
+
+			StringBuffer sb = new StringBuffer(); // convert to HEX format
+			for (int i = 0; i < digest.length; i++) 
+			{
+				sb.append(Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1));
+			}
+
+			String password_crypt = sb.toString();
+
+			// if the mail or password is already in the db the count will return true 
+			ResultSet count = state.executeQuery("SELECT * FROM clients WHERE mail='"+mail+"' and password='"+password_crypt+"'"); 
+
+//			ResultSet count = connexion.sqlRequest("SELECT * FROM clientsTest WHERE mail='"+mail+"' and password='"+password_crypt+"'"); 
+			
+//			count.beforeFirst();// put the  cursor in the beginning of the table to be sure to see all occurrency
+
+			if (count.next() == true )
+			{
+				//System.out.println("Your mail is already in the Data Base");
+				events.newEvent("Warning","Your mail is already in the Data Base",2);
+				System.out.println("shouldCreateANewUser: ok");
+			}
+			else
+			{
+				state.execute("INSERT INTO clients (name,first_name,mail,password,level) VALUES('"+name+"','"+first_name+"','"+mail+"', '"+password_crypt+"','1000')"); 
+				state.execute("DELETE FROM clients WHERE level = 1000"); // delete the test client
+				System.out .println("Your submissions is under review, as soon you will received a mail"); 
+				//sign.sign_window();
+				events.newEvent("Info","Wait few minutes for using Drope",1);
+				//return "Your submissions is under review, as soon you will received a mail";
+			}
+			state.close();
+			connexion.closeConnection();
+			System.out.println("shouldCreateANewUser: ok\n");
+		}
+		catch (Exception e) 
+		{
+			System.out.println("shouldCreateANewUser: not ok\n"+e);
+		}
+
+	}
+
+	
+	
+	public void sign_window() throws SQLException
 	{
 		//---------------- Form --------------------//
 
@@ -93,7 +155,7 @@ public class sign extends JFrame{
 		final JTextField textPassword;
 		final JTextField textPassword2;
 
-		sign frame = new sign();
+		final sign frame = new sign();
 		frame.setBounds(100, 100, 395, 225);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -146,16 +208,35 @@ public class sign extends JFrame{
 		textPassword2.setColumns(10);
 
 		JButton btnSignIn = new JButton("Sign in");
-
+		JButton btnConnect = new JButton("Connect");
+		
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setResizable(false);
 
-		final JLabel labelStatement = new JLabel("\uF8FF");
+		final JLabel labelStatement = new JLabel("");
 		labelStatement.setBounds(17, 173, 161, 16);
+		labelStatement.setForeground(Color.RED);
 		contentPane.add(labelStatement);
 		btnSignIn.setBounds(272, 28, 117, 29);
+		btnConnect.setBounds(272, 55, 117, 29);
 		contentPane.add(btnSignIn);
+		contentPane.add(btnConnect);
+		
+		btnConnect.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				
+				authentification frameAuth = new authentification();
+				frameAuth.setVisible(true);
+				frame.setVisible(false);
+				
+			}
+		});
 
+		
+		
 		btnSignIn.addActionListener(new ActionListener() {
 			// on button click
 			public void actionPerformed(ActionEvent arg0) 
@@ -171,7 +252,7 @@ public class sign extends JFrame{
 					// check if all of the field are filled
 					switch(check_if_filled(textName, textFirstName, textEMail, textPassword, textPassword2))
 					{
-					case 1:
+					case 1: // everything is filled
 						sign_In_DB(textName.getText(), textFirstName.getText(), textEMail.getText(), textPassword.getText());
 						break;
 					case 2:

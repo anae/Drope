@@ -1,11 +1,11 @@
 D.R.O.P.E
 =========
 
-HEAD
+
 Working final project by Ananaba Elliot and Therasse Pierre
-=======
+
+
 Project by Ananaba Elliot and Therasse Pierre
->>>>>>> b075716... event UI beta
 
 We do that as a final work for our student life.
 
@@ -24,4 +24,4 @@ Be sure to work on the latest version of a algorithm, presentation etc.
 
 We are very pround to present to you our last version of Drope(Beta 5)
 
-For security reasons the code didn't contains the upload, download and db class which contain only an upload/download/databese function
+For security reasons the code didn't contains the upload, download and db class which contain only an upload/download/database function

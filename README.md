@@ -13,7 +13,7 @@ Here you can found some information about the project.
 
 
 
-The idea was: create a smart, efficiant, intuitive, software able on your
+The idea was: create a smart, efficient, intuitive, software able on your
 computer and on your browser. With our software you gonna be able to synchronise
 your group works infos automaticly without have to think about anything.
 
